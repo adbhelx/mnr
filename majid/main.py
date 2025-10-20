@@ -11,6 +11,9 @@ from telegram.ext import (
 )
 from flask import Flask, request
 
+# Initialize Flask app for WSGI
+flask_app = Flask(__name__)
+
 from config import TOKEN, ADMIN_USER_IDS
 
 # Logging
@@ -298,7 +301,7 @@ async def adm_receive_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 # register handlers
-app = ApplicationBuilder().token(TOKEN).build()
+telegram_app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CallbackQueryHandler(main_h, pattern=r"^(MENU_|SEC_|BACK|SKIP_)"))
@@ -336,20 +339,21 @@ app.add_handler(ConversationHandler(
 ))
 
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
-if WEBHOOK_URL:
-    flask_app = Flask(__name__)
 
-    @flask_app.post("/")
+if WEBHOOK_URL:
+    @app.post("/")
     async def telegram_webhook():
-        await app.update_queue.put(Update.de_json(request.get_json(force=True), app.bot))
+        await telegram_app.update_queue.put(Update.de_json(request.get_json(force=True), telegram_app.bot))
         return "ok"
 
-    async def main():
-        await app.bot.set_webhook(url=WEBHOOK_URL)
-        await flask_app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    async def main_webhook():
+        await telegram_app.bot.set_webhook(url=WEBHOOK_URL)
 
     if __name__ == "__main__":
         import asyncio
-        asyncio.run(main())
+        asyncio.run(main_webhook())
+        flask_app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 else:
-    app.run_polling()
+    # Polling mode for local development
+    if __name__ == "__main__":
+        telegram_app.run_polling()
