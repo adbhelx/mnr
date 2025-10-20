@@ -14,7 +14,7 @@ from flask import Flask, request
 # Initialize Flask app for WSGI
 flask_app = Flask(__name__)
 
-from config import TOKEN, ADMIN_USER_IDS
+from .config import TOKEN, ADMIN_USER_IDS
 
 # Logging
 logging.basicConfig(level=logging.INFO)
