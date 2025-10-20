@@ -20,6 +20,15 @@ from .config import TOKEN, ADMIN_USER_IDS
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Cancels and ends the conversation."""
+    user = update.message.from_user
+    logger.info("User %s canceled the conversation.", user.first_name)
+    await update.message.reply_text(
+        "تم الإلغاء.", reply_markup=InlineKeyboardMarkup(build_main_menu())
+    )
+    return ConversationHandler.END
+
 # Data file
 DB = "data.json"
 if os.path.exists(DB):
