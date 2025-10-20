@@ -321,13 +321,16 @@ telegram_app.add_handler(ConversationHandler(
     states={
       ADMIN_SECTION:[CallbackQueryHandler(adm_view_sec,pattern=r"^AVS_")],
     },
-    fallbacks=[Comtelegram_app.add_handler(ConversationHandler(
-    entry_points=[CallbackQueryHandler(adm_del_start, pattern="^ADM_DEL$")],
-    states={
-      ADMIN_SECTION:[CallbackQueryHandler(adm_del_sec,pattern=r"^ADS_")],
-      ADMIN_TITLE:[MessageHandler(filters.TEXT & ~filters.COMMAND, adm_del_id)]
-    },
-    fallbacks=[CommandHandler("cancel", cancel)]
+    fallbacks=[
+        ConversationHandler(
+            entry_points=[CallbackQueryHandler(adm_del_start, pattern="^ADM_DEL$")],
+            states={
+                ADMIN_SECTION:[CallbackQueryHandler(adm_del_sec,pattern=r"^ADS_")],
+                ADMIN_TITLE:[MessageHandler(filters.TEXT & ~filters.COMMAND, adm_del_id)]
+            },
+            fallbacks=[CommandHandler("cancel", cancel)]
+        )
+    ]
 ))
 telegram_app.add_handler(ConversationHandler(
     entry_points=[CallbackQueryHandler(adm_up_start, pattern="^ADM_UP$")],
