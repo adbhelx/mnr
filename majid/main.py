@@ -303,33 +303,33 @@ async def adm_receive_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # register handlers
 telegram_app = ApplicationBuilder().token(TOKEN).build()
 
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(main_h, pattern=r"^(MENU_|SEC_|BACK|SKIP_)"))
-app.add_handler(CallbackQueryHandler(view_i, pattern=r"^VIEW_"))
+telegram_app.add_handler(CommandHandler("start", start))
+telegram_app.add_handler(CallbackQueryHandler(main_h, pattern=r"^(MENU_|SEC_|BACK|SKIP_)"))
+telegram_app.add_handler(CallbackQueryHandler(view_i, pattern=r"^VIEW_"))
 
-app.add_handler(ConversationHandler(
+telegram_app.add_handler(ConversationHandler(
     entry_points=[CallbackQueryHandler(adm_add_start, pattern="^ADM_ADD$")],
     states={
       ADMIN_SECTION:[CallbackQueryHandler(adm_add_sec,pattern=r"^AAS_")],
-      ADMIN_TITLE:[MessageHandler(filters.TEXT & ~filters.COMMAND,adm_add_title)],
-      ADMIN_CONTENT:[MessageHandler(filters.TEXT & ~filters.COMMAND,adm_add_cont)]
+      ADMIN_TITLE:[MessageHandler(filters.TEXT & ~filters.COMMAND, adm_add_title)],
+      ADMIN_CONTENT:[MessageHandler(filters.TEXT & ~filters.COMMAND, adm_add_cont)]
     },
-    fallbacks=[]
+    fallbacks=[CommandHandler("cancel", cancel)]
 ))
-app.add_handler(ConversationHandler(
+telegram_app.add_handler(ConversationHandler(
     entry_points=[CallbackQueryHandler(adm_view_start, pattern="^ADM_VIEW$")],
-    states={ ADMIN_SECTION:[CallbackQueryHandler(adm_view_sec,pattern=r"^AVS_")] },
-    fallbacks=[]
-))
-app.add_handler(ConversationHandler(
+    states={
+      ADMIN_SECTION:[CallbackQueryHandler(adm_view_sec,pattern=r"^AVS_")],
+    },
+    fallbacks=[Comtelegram_app.add_handler(ConversationHandler(
     entry_points=[CallbackQueryHandler(adm_del_start, pattern="^ADM_DEL$")],
     states={
       ADMIN_SECTION:[CallbackQueryHandler(adm_del_sec,pattern=r"^ADS_")],
-      ADMIN_TITLE:[MessageHandler(filters.TEXT & ~filters.COMMAND,adm_del_id)]
+      ADMIN_TITLE:[MessageHandler(filters.TEXT & ~filters.COMMAND, adm_del_id)]
     },
-    fallbacks=[]
+    fallbacks=[CommandHandler("cancel", cancel)]
 ))
-app.add_handler(ConversationHandler(
+telegram_app.add_handler(ConversationHandler(
     entry_points=[CallbackQueryHandler(adm_up_start, pattern="^ADM_UP$")],
     states={
       ADMIN_SECTION:[CallbackQueryHandler(adm_up_sec,pattern=r"^UPSEC_")],
