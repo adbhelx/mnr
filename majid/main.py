@@ -353,7 +353,7 @@ telegram_app.add_handler(ConversationHandler(
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 if WEBHOOK_URL:
-    @app.post("/")
+    @flask_app.post("/")
     async def telegram_webhook():
         await telegram_app.update_queue.put(Update.de_json(request.get_json(force=True), telegram_app.bot))
         return "ok"
