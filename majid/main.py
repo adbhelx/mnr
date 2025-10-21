@@ -10,6 +10,7 @@ from telegram.ext import (
     filters
 )
 from flask import Flask, request
+import asyncio
 
 # Initialize Flask app for WSGI
 flask_app = Flask(__name__)
@@ -32,7 +33,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 # Data file
 DB = "data.json"
 if os.path.exists(DB):
-    with open(DB, encoding='utf-8') as f:
+    with open(DB, encoding=\'utf-8\') as f:
         data = json.load(f)
 else:
     keys = [
@@ -43,7 +44,7 @@ else:
         "Applications"
     ]
     data = {k: [] for k in keys}
-    with open(DB, 'w', encoding='utf-8') as f:
+    with open(DB, \'w\', encoding=\'utf-8\') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 # Conversation states
@@ -51,7 +52,7 @@ ADMIN_SECTION, ADMIN_TITLE, ADMIN_CONTENT, UPLOAD_FILE = range(4)
 
 def save():
     logger.info(f"Saving data to {DB}")
-    with open(DB, 'w', encoding='utf-8') as f:
+    with open(DB, \'w\', encoding=\'utf-8\') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     logger.info(f"Finished saving data to {DB}")
 
@@ -160,7 +161,7 @@ async def main_h(update: Update, context: ContextTypes.DEFAULT_TYPE):
         items = data.get(sec, [])
         kb, row = [], []
         for it in items:
-            row.append(InlineKeyboardButton(it["title"], callback_data=f"VIEW_{sec}_{it['id']}"))
+            row.append(InlineKeyboardButton(it["title"], callback_data=f"VIEW_{sec}_{it[\'id\']}"))
             if len(row) == 2:
                 kb.append(row)
                 row = []
@@ -177,7 +178,7 @@ async def view_i(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     _, sec, sid = q.data.split("_")
     idx = int(sid)
-    itm = next((x for x in data.get(sec, []) if x["id"] == idx), None)
+    itm = next((x for x x in data.get(sec, []) if x["id"] == idx), None)
     if not itm:
         return await q.edit_message_text("⚠️ غير موجود.")
     await q.message.reply_document(document=itm["content"], filename=itm["title"])
@@ -231,7 +232,7 @@ async def adm_view_sec(update: Update, context):
     q = update.callback_query
     await q.answer()
     sec = q.data.split("_", 1)[1]
-    lst = "\n".join(f"- {i['title']} (id={i['id']})" for i in data[sec])
+    lst = "\n".join(f"- {i[\'title\']} (id={i[\'id\']})" for i in data[sec])
     await q.edit_message_text(f"عناصر {sec}:\n{lst}")
     return ConversationHandler.END
 
@@ -280,7 +281,7 @@ async def adm_up_sec(update: Update, context):
     q = update.callback_query
     await q.answer()
     context.user_data["sec"] = q.data.split("_", 1)[1]
-    await q.edit_message_text(f"✏️ أرسل الملف للقسم {context.user_data['sec']}:")
+    await q.edit_message_text(f"✏️ أرسل الملف للقسم {context.user_data[\'sec\']}:")
     return UPLOAD_FILE
 
 async def adm_receive_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -347,25 +348,39 @@ telegram_app.add_handler(ConversationHandler(
       ADMIN_SECTION:[CallbackQueryHandler(adm_up_sec,pattern=r"^UPSEC_")],
       UPLOAD_FILE:[MessageHandler(filters.Document.ALL | filters.PHOTO | filters.VIDEO | filters.AUDIO,adm_receive_file)]
     },
-    fallbacks=[]
+    fallbacks=[CommandHandler("cancel", cancel)]
 ))
 
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
+# Webhook mode
 if WEBHOOK_URL:
-    @flask_app.post("/")
-    async def telegram_webhook():
+    @flask_app.route("/", methods=["POST"])
+    async def telegram_webhook_handler():
         await telegram_app.update_queue.put(Update.de_json(request.get_json(force=True), telegram_app.bot))
         return "ok"
 
-    async def main_webhook():
+    @flask_app.route("/set_webhook")
+    async def set_webhook_route():
         await telegram_app.bot.set_webhook(url=WEBHOOK_URL)
+        return f"Webhook set to {WEBHOOK_URL}"
 
-    if __name__ == "__main__":
+    @flask_app.route("/delete_webhook")
+    async def delete_webhook_route():
+        await telegram_app.bot.delete_webhook()
+        return "Webhook deleted"
+
+    # Function to set webhook, to be called by Gunicorn's worker_init_after_load hook
+    async def _set_webhook_async():
+        await telegram_app.bot.set_webhook(url=WEBHOOK_URL)
+        logger.info(f"Webhook set to {WEBHOOK_URL}")
+
+    def setup_webhook():
         import asyncio
-        asyncio.run(main_webhook())
-        flask_app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+        asyncio.run(_set_webhook_async())
+
+# Polling mode for local development (if WEBHOOK_URL is not set)
 else:
-    # Polling mode for local development
     if __name__ == "__main__":
         telegram_app.run_polling()
+

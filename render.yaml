@@ -2,8 +2,8 @@ services:
   - type: web
     name: majid-telegram-bot
     env: python
-    buildCommand: "pip install -r majid/requirements.txt"
-    startCommand: "WEBHOOK_URL=https://<YOUR_RENDER_SERVICE_URL> python majid/main.py"
+    buildCommand: "pip install -r majid/requirements.txt && pip install gevent"
+    startCommand: "python -m gunicorn --bind 0.0.0.0:$PORT --worker-class gevent --workers 1 --preload --timeout 60 majid.wsgi:flask_app --env WEBHOOK_URL=https://mnr-zwzy.onrender.com --env GUNICORN_CMD_ARGS='--worker-tmp-dir /dev/shm'"
     envVars:
       - key: TOKEN
         sync: false
