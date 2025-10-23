@@ -178,7 +178,7 @@ async def view_i(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await q.answer()
     _, sec, sid = q.data.split("_")
     idx = int(sid)
-    itm = next((x for x x in data.get(sec, []) if x["id"] == idx), None)
+    itm = next((x for x in data.get(sec, []) if x["id"] == idx), None)
     if not itm:
         return await q.edit_message_text("⚠️ غير موجود.")
     await q.message.reply_document(document=itm["content"], filename=itm["title"])
