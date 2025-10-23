@@ -33,7 +33,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 # Data file
 DB = "data.json"
 if os.path.exists(DB):
-    with open(DB, encoding=\'utf-8\') as f:
+    with open(DB, encoding='utf-8') as f:
         data = json.load(f)
 else:
     keys = [
@@ -44,7 +44,7 @@ else:
         "Applications"
     ]
     data = {k: [] for k in keys}
-    with open(DB, \'w\', encoding=\'utf-8\') as f:
+    with open(DB, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 # Conversation states
@@ -52,7 +52,7 @@ ADMIN_SECTION, ADMIN_TITLE, ADMIN_CONTENT, UPLOAD_FILE = range(4)
 
 def save():
     logger.info(f"Saving data to {DB}")
-    with open(DB, \'w\', encoding=\'utf-8\') as f:
+    with open(DB, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     logger.info(f"Finished saving data to {DB}")
 
