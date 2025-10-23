@@ -161,7 +161,7 @@ async def main_h(update: Update, context: ContextTypes.DEFAULT_TYPE):
         items = data.get(sec, [])
         kb, row = [], []
         for it in items:
-            row.append(InlineKeyboardButton(it["title"], callback_data=f"VIEW_{sec}_{it[\'id\']}"))
+            row.append(InlineKeyboardButton(it["title"], callback_data=f"VIEW_{sec}_{it["id"]}"))
             if len(row) == 2:
                 kb.append(row)
                 row = []
@@ -232,7 +232,7 @@ async def adm_view_sec(update: Update, context):
     q = update.callback_query
     await q.answer()
     sec = q.data.split("_", 1)[1]
-    lst = "\n".join(f"- {i[\'title\']} (id={i[\'id\']})" for i in data[sec])
+    lst = "\n".join(f"- {i["title"]} (id={i["id"]})" for i in data[sec])
     await q.edit_message_text(f"عناصر {sec}:\n{lst}")
     return ConversationHandler.END
 
@@ -281,7 +281,7 @@ async def adm_up_sec(update: Update, context):
     q = update.callback_query
     await q.answer()
     context.user_data["sec"] = q.data.split("_", 1)[1]
-    await q.edit_message_text(f"✏️ أرسل الملف للقسم {context.user_data[\'sec\']}:")
+    await q.edit_message_text(f"✏️ أرسل الملف للقسم {context.user_data["sec"]}:")
     return UPLOAD_FILE
 
 async def adm_receive_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
